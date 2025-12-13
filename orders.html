@@ -1,0 +1,58 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Orders</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles/shared/general.css" />
+  <link rel="stylesheet" href="styles/manazon-header.css" />
+  <link rel="stylesheet" href="styles/orders.css" />
+</head>
+<body>
+
+  <div class="manazon-header">
+    <div class="manazon-header-left-section">
+      <a href="manazon.html" class="header-link">
+        <img class="manazon-logo" src="images/Manazon-logo.png" alt="Manazon" />
+        <img class="manazon-mobile-logo" src="images/Manazon-logo.png" alt="Manazon" />
+      </a>
+    </div>
+    <div class="manazon-header-middle-section">
+      <input class="search-bar" type="text" placeholder="Search" />
+      <button class="search-button" aria-label="Search">
+        <img class="search-icon" src="images/icons/search-icon.png" alt="" />
+      </button>
+    </div>
+    <div class="manazon-header-right-section">
+      <a class="orders-link header-link" href="orders.html">
+        <span class="returns-text">Returns</span>
+        <span class="orders-text">&amp; Orders</span>
+      </a>
+      <a class="cart-link header-link" href="checkout.html">
+        <img class="cart-icon" src="images/icons/cart-icon.png" alt="" />
+        <div class="cart-quantity js-cart-quantity">0</div>
+        <div class="cart-text">Cart</div>
+      </a>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="page-title">Your Orders</div>
+
+
+    <div class="orders-grid js-orders-grid"></div>
+
+    
+    <div class="no-orders js-no-orders" style="display:none; padding:16px;">
+      You don't have any orders yet. <a class="link-primary" href="manazon.html">Shop now</a>.
+    </div>
+  </div>
+
+  <!-- NEW: render orders dynamically -->
+  <script type="module" src="scripts/orders-render.js"></script>
+</body>
+</html>
