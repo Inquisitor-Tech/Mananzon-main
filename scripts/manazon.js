@@ -1,13 +1,43 @@
-
-import { cart, addToCart, updateCartQuantity } from '../data/cart.js';
+import { addToCart, updateCartQuantity } from '../data/cart.js';
 import { products } from '../data/products.js';
 import { formatMoney } from './utils/money.js';
 
+let searchText = '';
+
+function getFilteredProducts() {
+  const text = searchText.trim().toLowerCase();
+
+  if (!text) {
+    return products;
+  }
+
+  return products.filter((product) => {
+    const nameMatches = product.name.toLowerCase().includes(text);
+
+    const keywordMatches = product.keywords?.some((keyword) =>
+      keyword.toLowerCase().includes(text)
+    );
+
+    return nameMatches || keywordMatches;
+  });
+}
+
 function renderProducts() {
   const grid = document.querySelector('.js-product-grid');
+  const filteredProducts = getFilteredProducts();
+
+  if (filteredProducts.length === 0) {
+    grid.innerHTML = `
+      <div class="no-results-message">
+        No products matched "<strong>${searchText}</strong>".
+      </div>
+    `;
+    return;
+  }
+
   let html = '';
 
-  products.forEach((product) => {
+  filteredProducts.forEach((product) => {
     html += `
       <div class="product-container" data-product-id="${product.id}">
         <div class="product-image-container">
@@ -17,7 +47,11 @@ function renderProducts() {
         <div class="product-name limit-text-to-2-lines">${product.name}</div>
 
         <div class="product-rating-container">
-          <img class="product-rating-stars" src="images/ratings/rating-${product.rating.stars * 10}.png" alt="${product.rating.stars} stars" />
+          <img
+            class="product-rating-stars"
+            src="images/ratings/rating-${product.rating.stars * 10}.png"
+            alt="${product.rating.stars} stars"
+          />
           <div class="product-rating-count link-primary">${product.rating.count}</div>
         </div>
 
@@ -38,7 +72,9 @@ function renderProducts() {
           Added
         </div>
 
-        <button class="add-to-cart-button button-primary js-add-to-cart" data-product-id="${product.id}">
+        <button
+          class="add-to-cart-button button-primary js-add-to-cart"
+          data-product-id="${product.id}">
           Add to Cart
         </button>
       </div>
@@ -46,9 +82,10 @@ function renderProducts() {
   });
 
   grid.innerHTML = html;
+  wireProductEvents();
 }
 
-function wireEvents() {
+function wireProductEvents() {
   document.querySelectorAll('.js-add-to-cart').forEach((btn) => {
     btn.addEventListener('click', () => {
       const container = btn.closest('.product-container');
@@ -56,18 +93,39 @@ function wireEvents() {
       const qty = Number(container.querySelector('.js-qty').value) || 1;
 
       addToCart(productId, qty);
-      updateCartQuantity(); // Update badge immediately
+      updateCartQuantity();
 
-      // Brief “Added” feedback
       const added = container.querySelector('.js-added');
-      added.classList.add('visible'); // assumes CSS transitions
+      added.classList.add('visible');
       setTimeout(() => added.classList.remove('visible'), 1200);
     });
   });
+}
 
-  // Initialize cart badge on page load
-  updateCartQuantity();
+function runSearch() {
+  const input = document.querySelector('.search-bar');
+  searchText = input.value;
+  renderProducts();
+}
+
+function wireSearchEvents() {
+  const searchInput = document.querySelector('.search-bar');
+  const searchButton = document.querySelector('.search-button');
+
+  searchButton.addEventListener('click', runSearch);
+
+  searchInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      runSearch();
+    }
+  });
+
+  searchInput.addEventListener('input', () => {
+    searchText = searchInput.value;
+    renderProducts();
+  });
 }
 
 renderProducts();
-wireEvents();
+wireSearchEvents();
+updateCartQuantity();

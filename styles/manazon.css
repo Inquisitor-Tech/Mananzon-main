@@ -134,3 +134,9 @@
   padding: 8px;
   border-radius: 50px;
 }
+
+.no-results-message {
+  grid-column: 1 / -1;
+  padding: 40px;
+  font-size: 18px;
+}
