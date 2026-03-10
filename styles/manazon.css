@@ -2,67 +2,83 @@
   margin-top: 60px;
 }
 
+.search-filters {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.filter-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-label {
+  font-weight: 500;
+  color: #495057;
+  white-space: nowrap;
+}
+
+.sort-select,
+.category-select {
+  padding: 6px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background-color: white;
+  font-size: 14px;
+  min-width: 150px;
+}
+
+.sort-select:focus,
+.category-select:focus {
+  outline: 2px solid rgb(255, 153, 0);
+  outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+  .search-filters {
+    padding: 15px;
+    gap: 15px;
+  }
+  
+  .filter-section {
+    flex: 1;
+    min-width: 100%;
+  }
+  
+  .sort-select,
+  .category-select {
+    min-width: 100%;
+  }
+}
+
 .products-grid {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1px;
+  background-color: rgb(231, 231, 231);
+  border: 1px solid rgb(231, 231, 231);
 }
 
 
-@media (max-width: 2000px) {
-  .products-grid {
-    grid-template-columns: repeat(7, 1fr);
-  }
-}
-
-/* This @media means when the screen width is 1600px or
-   less, we will divide the grid into 6 columns. */
-@media (max-width: 1600px) {
-  .products-grid {
-    grid-template-columns: repeat(6, 1fr);
-  }
-}
-
-@media (max-width: 1300px) {
-  .products-grid {
-    grid-template-columns: repeat(5, 1fr);
-  }
-}
-
-@media (max-width: 1000px) {
-  .products-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-@media (max-width: 800px) {
-  .products-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (max-width: 575px) {
-  .products-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 450px) {
-  .products-grid {
-    grid-template-columns: 1fr;
-  }
-}
 
 .product-container {
-  padding-top: 40px;
-  padding-bottom: 25px;
-  padding-left: 25px;
-  padding-right: 25px;
-
-  border-right: 1px solid rgb(231, 231, 231);
-  border-bottom: 1px solid rgb(231, 231, 231);
-
+  padding: 25px;
+  background-color: white;
   display: flex;
   flex-direction: column;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.product-container:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .product-image-container {
@@ -131,8 +147,24 @@
 
 .add-to-cart-button {
   width: 100%;
-  padding: 8px;
+  padding: 12px;
   border-radius: 50px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.add-to-cart-button:hover {
+  transform: scale(1.02);
+  box-shadow: 0 2px 8px rgba(47, 82, 203, 0.3);
+}
+
+.add-to-cart-button:active {
+  transform: scale(0.98);
+}
+
+.visible {
+  opacity: 1 !important;
+  transition: opacity 0.3s ease;
 }
 
 .no-results-message {

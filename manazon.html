@@ -42,6 +42,31 @@
   </div>
 
   <div class="main">
+    <div class="search-filters">
+      <div class="filter-section">
+        <label for="sort-select" class="filter-label">Sort by:</label>
+        <select id="sort-select" class="sort-select">
+          <option value="name-asc">Name (A-Z)</option>
+          <option value="name-desc">Name (Z-A)</option>
+          <option value="price-low">Price (Low to High)</option>
+          <option value="price-high">Price (High to Low)</option>
+          <option value="rating">Highest Rated</option>
+        </select>
+      </div>
+      
+      <div class="filter-section">
+        <label for="category-select" class="filter-label">Category:</label>
+        <select id="category-select" class="category-select">
+          <option value="all">All Items</option>
+          <option value="wand">Wands</option>
+          <option value="book">Books</option>
+          <option value="ingredient">Ingredients</option>
+          <option value="clothing">Clothing</option>
+          <option value="creature">Creatures</option>
+        </select>
+      </div>
+    </div>
+    
     <div class="products-grid js-product-grid"></div>
   </div>
 

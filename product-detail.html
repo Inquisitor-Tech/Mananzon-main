@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Product Details - Manazon</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles/shared/general.css" />
+  <link rel="stylesheet" href="styles/manazon-header.css" />
+  <style>
+    .product-detail {
+      max-width: 1200px;
+      margin: 80px auto 40px;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+    }
+
+    .product-image-section {
+      position: relative;
+    }
+
+    .main-product-image {
+      width: 100%;
+      height: 400px;
+      object-fit: contain;
+      border-radius: 8px;
+      cursor: zoom-in;
+      transition: transform 0.3s ease;
+    }
+
+    .main-product-image:hover {
+      transform: scale(1.05);
+    }
+
+    .product-info {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .product-title {
+      font-size: 28px;
+      font-weight: 700;
+      margin: 0;
+      color: #212121;
+    }
+
+    .product-rating {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .product-price {
+      font-size: 24px;
+      font-weight: 700;
+      color: #212121;
+    }
+
+    .product-description {
+      line-height: 1.6;
+      color: #333;
+    }
+
+    .add-to-cart-section {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+
+    .quantity-selector {
+      display: flex;
+      align-items: center;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    .quantity-btn {
+      background: #f5f5f5;
+      border: none;
+      padding: 10px 15px;
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    .quantity-input {
+      width: 60px;
+      text-align: center;
+      border: none;
+      font-size: 16px;
+    }
+
+    .add-to-cart-btn {
+      background: rgb(255, 216, 20);
+      border: 1px solid rgb(252, 210, 0);
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .add-to-cart-btn:hover {
+      background: rgb(247, 202, 0);
+      transform: scale(1.02);
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: rgb(1, 124, 182);
+      text-decoration: none;
+      margin-bottom: 20px;
+    }
+
+    .back-link:hover {
+      color: rgb(196, 80, 0);
+    }
+
+    @media (max-width: 768px) {
+      .product-detail {
+        grid-template-columns: 1fr;
+        margin: 80px 20px 40px;
+      }
+
+      .product-title {
+        font-size: 24px;
+      }
+
+      .product-price {
+        font-size: 20px;
+      }
+    }
+
+    .zoom-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.9);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      cursor: zoom-out;
+    }
+
+    .zoom-overlay.active {
+      display: flex;
+    }
+
+    .zoomed-image {
+      max-width: 90%;
+      max-height: 90%;
+      object-fit: contain;
+    }
+
+    .close-zoom {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: white;
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      font-size: 20px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="manazon-header">
+    <div class="manazon-header-left-section">
+      <a href="manazon.html" class="header-link">
+        <img class="manazon-logo" src="images/Manazon-logo.png" alt="Manazon" />
+        <img class="manazon-mobile-logo" src="images/Manazon-logo.png" alt="Manazon" />
+      </a>
+    </div>
+
+    <div class="manazon-header-middle-section">
+      <input class="search-bar" type="text" placeholder="Search" />
+      <button class="search-button" aria-label="Search">
+        <img class="search-icon" src="images/icons/search-icon.png" alt="" />
+      </button>
+    </div>
+
+    <div class="manazon-header-right-section">
+      <a class="orders-link header-link" href="orders.html">
+        <span class="returns-text">Returns</span>
+        <span class="orders-text">&amp; Orders</span>
+      </a>
+
+      <a class="cart-link header-link" href="checkout.html">
+        <img class="cart-icon" src="images/icons/cart-icon.png" alt="" />
+        <div class="cart-quantity js-cart-quantity">0</div>
+        <div class="cart-text">Cart</div>
+      </a>
+    </div>
+  </div>
+
+  <div class="main">
+    <a href="manazon.html" class="back-link">
+      ← Back to products
+    </a>
+
+    <div class="product-detail">
+      <div class="product-image-section">
+        <img class="main-product-image" id="productImage" src="" alt="" />
+      </div>
+
+      <div class="product-info">
+        <h1 class="product-title" id="productTitle"></h1>
+        
+        <div class="product-rating" id="productRating"></div>
+        
+        <div class="product-price" id="productPrice"></div>
+        
+        <div class="product-description" id="productDescription"></div>
+        
+        <div class="add-to-cart-section">
+          <div class="quantity-selector">
+            <button class="quantity-btn" id="decreaseQty">-</button>
+            <input type="number" class="quantity-input" id="quantityInput" value="1" min="1" max="10" />
+            <button class="quantity-btn" id="increaseQty">+</button>
+          </div>
+          
+          <button class="add-to-cart-btn" id="addToCartBtn">Add to Cart</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="zoom-overlay" id="zoomOverlay">
+    <button class="close-zoom" id="closeZoom">×</button>
+    <img class="zoomed-image" id="zoomedImage" src="" alt="" />
+  </div>
+
+  <script type="module">
+    import { addToCart, updateCartQuantity } from './data/cart.js';
+    import { getProduct } from './data/products.js';
+    import { formatMoney } from './scripts/utils/money.js';
+
+    // Get product ID from URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('id');
+    
+    if (!productId) {
+      window.location.href = 'manazon.html';
+    }
+
+    const product = getProduct(productId);
+    
+    if (!product) {
+      window.location.href = 'manazon.html';
+    }
+
+    // Populate product details
+    document.getElementById('productImage').src = product.image;
+    document.getElementById('productImage').alt = product.name;
+    document.getElementById('productTitle').textContent = product.name;
+    document.getElementById('productPrice').textContent = `$${formatMoney(product.priceCents)}`;
+    
+    // Rating
+    const ratingHtml = `
+      <img src="images/ratings/rating-${product.rating.stars * 10}.png" alt="${product.rating.stars} stars" />
+      <span>${product.rating.count} reviews</span>
+    `;
+    document.getElementById('productRating').innerHTML = ratingHtml;
+    
+    // Description (generate one based on keywords)
+    const description = generateDescription(product);
+    document.getElementById('productDescription').textContent = description;
+
+    // Quantity controls
+    const quantityInput = document.getElementById('quantityInput');
+    const decreaseBtn = document.getElementById('decreaseQty');
+    const increaseBtn = document.getElementById('increaseQty');
+
+    decreaseBtn.addEventListener('click', () => {
+      if (quantityInput.value > 1) {
+        quantityInput.value = parseInt(quantityInput.value) - 1;
+      }
+    });
+
+    increaseBtn.addEventListener('click', () => {
+      if (quantityInput.value < 10) {
+        quantityInput.value = parseInt(quantityInput.value) + 1;
+      }
+    });
+
+    // Add to cart
+    document.getElementById('addToCartBtn').addEventListener('click', () => {
+      const quantity = parseInt(quantityInput.value);
+      addToCart(productId, quantity);
+      updateCartQuantity();
+      
+      // Show success message
+      const btn = document.getElementById('addToCartBtn');
+      const originalText = btn.textContent;
+      btn.textContent = 'Added!';
+      btn.style.background = '#28a745';
+      
+      setTimeout(() => {
+        btn.textContent = originalText;
+        btn.style.background = '';
+      }, 2000);
+    });
+
+    // Image zoom functionality
+    const productImage = document.getElementById('productImage');
+    const zoomOverlay = document.getElementById('zoomOverlay');
+    const zoomedImage = document.getElementById('zoomedImage');
+    const closeZoom = document.getElementById('closeZoom');
+
+    productImage.addEventListener('click', () => {
+      zoomOverlay.classList.add('active');
+      zoomedImage.src = product.image;
+      zoomedImage.alt = product.name;
+    });
+
+    zoomOverlay.addEventListener('click', () => {
+      zoomOverlay.classList.remove('active');
+    });
+
+    closeZoom.addEventListener('click', () => {
+      zoomOverlay.classList.remove('active');
+    });
+
+    // Generate product description
+    function generateDescription(product) {
+      const descriptions = {
+        wand: `A magnificent ${product.name.toLowerCase()} crafted for the discerning wizard. This wand features exceptional balance and magical conductivity, making it perfect for spellcasting of all levels.`,
+        book: `An ancient and powerful ${product.name.toLowerCase()}. Filled with arcane knowledge and mystical illustrations, this tome is essential for any serious practitioner of the magical arts.`,
+        ingredient: `A rare and potent ${product.name.toLowerCase()} highly sought after by alchemists and potion-makers. This ingredient possesses extraordinary magical properties.`,
+        clothing: `Expertly crafted ${product.name.toLowerCase()} designed for both comfort and magical protection. Made from the finest mystical materials, this garment is perfect for academy students and master wizards alike.`,
+        creature: `A remarkable ${product.name.toLowerCase()} that embodies the essence of magical creatures. This specimen is carefully tended and ready to bond with its new keeper.`
+      };
+
+      const category = getCategory(product);
+      return descriptions[category] || `A mysterious and powerful ${product.name.toLowerCase()} from the realm of magic. This extraordinary item possesses unique properties that make it highly valued by collectors and practitioners alike.`;
+    }
+
+    function getCategory(product) {
+      if (product.id.includes('wand')) return 'wand';
+      if (product.id.includes('book')) return 'book';
+      if (product.type === 'clothing') return 'clothing';
+      if (product.keywords?.includes('plant') || product.keywords?.includes('ingredient')) return 'ingredient';
+      if (product.keywords?.includes('dragon') || product.keywords?.includes('creature')) return 'creature';
+      return 'other';
+    }
+
+    // Initialize cart quantity
+    updateCartQuantity();
+  </script>
+</body>
+</html>

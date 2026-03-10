@@ -61,6 +61,23 @@
     height: 35px;
     margin-top: 5px;
   }
+  
+  .manazon-header-right-section {
+    width: auto;
+    gap: 8px;
+  }
+  
+  .orders-link {
+    display: none;
+  }
+  
+  .cart-text {
+    display: none;
+  }
+  
+  .cart-icon {
+    width: 40px;
+  }
 }
 
 .manazon-header-middle-section {
@@ -69,6 +86,13 @@
   margin-left: 10px;
   margin-right: 10px;
   display: flex;
+}
+
+@media (max-width: 768px) {
+  .manazon-header-middle-section {
+    margin-left: 5px;
+    margin-right: 5px;
+  }
 }
 
 .search-bar {
