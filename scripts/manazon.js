@@ -3,15 +3,17 @@
  * Handles product display, search, filtering, sorting, and cart functionality
  */
 
-import { addToCart, updateCartQuantity } from '../data/cart.js';
-import { products } from '../data/products.js';
+import { updateCartQuantity } from '../data/cart.js';
 import { formatMoney } from './utils/money.js';
+import apiService from './api.js';
 
 // Global state management
 let searchText = '';
 let searchTimeout;
 let currentSort = 'name-asc';
 let currentCategory = 'all';
+let allProducts = [];
+let isLoading = false;
 
 /**
  * Debounce function to limit how often a function can be called
@@ -32,12 +34,7 @@ function debounceSearch(callback, delay = 300) {
  * @returns {string} Category name
  */
 function getCategory(product) {
-  if (product.id.includes('wand')) return 'wand';
-  if (product.id.includes('book')) return 'book';
-  if (product.type === 'clothing') return 'clothing';
-  if (product.keywords?.includes('plant') || product.keywords?.includes('ingredient')) return 'ingredient';
-  if (product.keywords?.includes('dragon') || product.keywords?.includes('creature')) return 'creature';
-  return 'other';
+  return product.category || 'other';
 }
 
 /**
@@ -71,7 +68,7 @@ function sortProducts(products, sortType) {
  */
 function getFilteredProducts() {
   const text = searchText.trim().toLowerCase();
-  let filtered = products;
+  let filtered = allProducts;
 
   // Filter by search text
   if (text) {
@@ -94,93 +91,132 @@ function getFilteredProducts() {
 }
 
 /**
+ * Load products from API
+ */
+async function loadProducts() {
+  if (isLoading) return;
+  
+  isLoading = true;
+  try {
+    const response = await apiService.getProducts({
+      limit: 100, // Get all products for client-side filtering
+      sort: currentSort,
+      category: currentCategory === 'all' ? undefined : currentCategory,
+      search: searchText || undefined
+    });
+
+    if (response.success) {
+      allProducts = response.data.products;
+      renderProducts();
+    }
+  } catch (error) {
+    console.error('Error loading products:', error);
+    showError('Failed to load products. Please try again.');
+  } finally {
+    isLoading = false;
+  }
+}
+
+/**
+ * Show error message to user
+ */
+function showError(message) {
+  const grid = document.querySelector('.js-product-grid');
+  grid.innerHTML = `
+    <div class="error-message" style="grid-column: 1 / -1; padding: 40px; text-align: center; color: red;">
+      <div style="font-size: 18px; margin-bottom: 10px;">${message}</div>
+      <button onclick="loadProducts()" class="button-primary" style="margin-top: 10px;">Retry</button>
+    </div>
+  `;
+}
+
+/**
  * Render products to the grid with loading states and error handling
  */
 function renderProducts() {
   const grid = document.querySelector('.js-product-grid');
   
-  // Show loading state
-  grid.innerHTML = `
-    <div class="loading-state" style="grid-column: 1 / -1; padding: 40px; text-align: center;">
-      <div style="font-size: 18px; color: #666;">Loading magical items...</div>
-    </div>
-  `;
+  if (isLoading) {
+    grid.innerHTML = `
+      <div class="loading-state" style="grid-column: 1 / -1; padding: 40px; text-align: center;">
+        <div style="font-size: 18px; color: #666;">Loading magical items...</div>
+      </div>
+    `;
+    return;
+  }
 
-  // Simulate loading for better UX (remove this in production)
-  setTimeout(() => {
-    const filteredProducts = getFilteredProducts();
+  const filteredProducts = getFilteredProducts();
 
-    if (filteredProducts.length === 0) {
-      grid.innerHTML = `
-        <div class="no-results-message" style="grid-column: 1 / -1; padding: 40px; text-align: center;">
-          <div style="font-size: 18px; margin-bottom: 10px;">
-            No magical items matched "<strong>${searchText}</strong>".
-          </div>
-          <div style="color: #666; font-size: 14px;">
-            Try searching for wands, spell books, or dragon eggs
-          </div>
+  if (filteredProducts.length === 0) {
+    grid.innerHTML = `
+      <div class="no-results-message" style="grid-column: 1 / -1; padding: 40px; text-align: center;">
+        <div style="font-size: 18px; margin-bottom: 10px;">
+          No magical items matched "<strong>${searchText}</strong>".
         </div>
-      `;
-      return;
-    }
-
-    let html = '';
-
-    filteredProducts.forEach((product) => {
-      html += `
-        <div class="product-container" data-product-id="${product.id}">
-          <div class="product-image-container">
-            <a href="product-detail.html?id=${product.id}" class="product-link" aria-label="View details for ${product.name}">
-              <img class="product-image" src="${product.image}" alt="${product.name}" 
-                   onerror="this.src='images/products/placeholder.jpg'" />
-            </a>
-          </div>
-
-          <div class="product-name limit-text-to-2-lines">
-            <h3><a href="product-detail.html?id=${product.id}" class="product-link" style="text-decoration: none; color: inherit;">${product.name}</a></h3>
-          </div>
-
-          <div class="product-rating-container" role="img" aria-label="Rating: ${product.rating.stars} stars out of 5, based on ${product.rating.count} reviews">
-            <img
-              class="product-rating-stars"
-              src="images/ratings/rating-${product.rating.stars * 10}.png"
-              alt=""
-              onerror="this.style.display='none'"
-            />
-            <div class="product-rating-count link-primary">${product.rating.count}</div>
-          </div>
-
-          <div class="product-price" aria-label="Price: $${formatMoney(product.priceCents)}">$${formatMoney(product.priceCents)}</div>
-
-          <div class="product-quantity-container">
-            <label for="qty-${product.id}" class="sr-only">Quantity</label>
-            <select class="js-qty" id="qty-${product.id}" aria-label="Quantity for ${product.name}">
-              ${Array.from({ length: 10 }, (_, i) => i + 1)
-                .map((n) => `<option value="${n}" ${n === 1 ? 'selected' : ''}>${n}</option>`)
-                .join('')}
-            </select>
-          </div>
-
-          <div class="product-spacer"></div>
-
-          <div class="added-to-cart js-added" aria-live="polite">
-            <img src="images/icons/checkmark.png" alt="" />
-            Added
-          </div>
-
-          <button
-            class="add-to-cart-button button-primary js-add-to-cart"
-            data-product-id="${product.id}"
-            aria-label="Add ${product.name} to cart">
-            Add to Cart
-          </button>
+        <div style="color: #666; font-size: 14px;">
+          Try searching for wands, spell books, or dragon eggs
         </div>
-      `;
-    });
+      </div>
+    `;
+    return;
+  }
 
-    grid.innerHTML = html;
-    wireProductEvents();
-  }, 300);
+  let html = '';
+
+  filteredProducts.forEach((product) => {
+    html += `
+      <div class="product-container" data-product-id="${product.id}">
+        <div class="product-image-container">
+          <a href="product-detail.html?id=${product.id}" class="product-link" aria-label="View details for ${product.name}">
+            <img class="product-image" src="${product.images[0]?.url || 'images/products/placeholder.jpg'}" alt="${product.name}" 
+                 onerror="this.src='images/products/placeholder.jpg'" />
+          </a>
+        </div>
+
+        <div class="product-name limit-text-to-2-lines">
+          <h3><a href="product-detail.html?id=${product.id}" class="product-link" style="text-decoration: none; color: inherit;">${product.name}</a></h3>
+        </div>
+
+        <div class="product-rating-container" role="img" aria-label="Rating: ${product.rating.stars} stars out of 5, based on ${product.rating.count} reviews">
+          <img
+            class="product-rating-stars"
+            src="images/ratings/rating-${product.rating.stars * 10}.png"
+            alt=""
+            onerror="this.style.display='none'"
+          />
+          <div class="product-rating-count link-primary">${product.rating.count}</div>
+        </div>
+
+        <div class="product-price" aria-label="Price: ${product.formattedPrice}">${product.formattedPrice}</div>
+
+        <div class="product-quantity-container">
+          <label for="qty-${product.id}" class="sr-only">Quantity</label>
+          <select class="js-qty" id="qty-${product.id}" aria-label="Quantity for ${product.name}">
+            ${Array.from({ length: 10 }, (_, i) => i + 1)
+              .map((n) => `<option value="${n}" ${n === 1 ? 'selected' : ''}>${n}</option>`)
+              .join('')}
+          </select>
+        </div>
+
+        <div class="product-spacer"></div>
+
+        <div class="added-to-cart js-added" aria-live="polite">
+          <img src="images/icons/checkmark.png" alt="" />
+          Added
+        </div>
+
+        <button
+          class="add-to-cart-button button-primary js-add-to-cart"
+          data-product-id="${product.id}"
+          aria-label="Add ${product.name} to cart">
+          Add to Cart
+        </button>
+      </div>
+    `;
+  });
+
+  grid.innerHTML = html;
+  wireProductEvents();
 }
 
 /**
@@ -198,7 +234,10 @@ function wireProductEvents() {
         btn.disabled = true;
         btn.textContent = 'Adding...';
         
-        addToCart(productId, qty);
+        // Add to cart via API
+        await apiService.addToCart(productId, qty);
+        
+        // Update cart quantity display
         updateCartQuantity();
 
         const added = container.querySelector('.js-added');
@@ -251,7 +290,7 @@ function wireProductEvents() {
 function runSearch() {
   const input = document.querySelector('.search-bar');
   searchText = input.value;
-  renderProducts();
+  loadProducts();
 }
 
 /**
@@ -274,7 +313,7 @@ function wireSearchEvents() {
   // Debounced search for better performance
   const debouncedSearch = debounceSearch(() => {
     searchText = searchInput.value;
-    renderProducts();
+    loadProducts();
   });
 
   searchInput.addEventListener('input', debouncedSearch);
@@ -282,16 +321,16 @@ function wireSearchEvents() {
   // Sort and category change handlers
   sortSelect.addEventListener('change', (event) => {
     currentSort = event.target.value;
-    renderProducts();
+    loadProducts();
   });
 
   categorySelect.addEventListener('change', (event) => {
     currentCategory = event.target.value;
-    renderProducts();
+    loadProducts();
   });
 }
 
 // Initialize the application
-renderProducts();
+loadProducts();
 wireSearchEvents();
 updateCartQuantity();

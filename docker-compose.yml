@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:6.0
+    container_name: manazon-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: manazon
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./scripts/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - manazon-network
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: manazon-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      MONGODB_URI: mongodb://admin:password123@mongodb:27017/manazon?authSource=admin
+      JWT_SECRET: your_super_secret_jwt_key_change_in_production
+      JWT_EXPIRE: 7d
+      FRONTEND_URL: http://localhost:3000
+      RATE_LIMIT_WINDOW_MS: 900000
+      RATE_LIMIT_MAX_REQUESTS: 100
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongodb
+    volumes:
+      - ./backend/uploads:/app/uploads
+    networks:
+      - manazon-network
+    command: >
+      sh -c "
+        echo 'Waiting for MongoDB...' &&
+        sleep 10 &&
+        echo 'Starting application...' &&
+        npm start
+      "
+
+  # Frontend (Nginx serving static files)
+  frontend:
+    image: nginx:alpine
+    container_name: manazon-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./:/usr/share/nginx/html:ro
+    depends_on:
+      - backend
+    networks:
+      - manazon-network
+
+volumes:
+  mongodb_data:
+    driver: local
+
+networks:
+  manazon-network:
+    driver: bridge
